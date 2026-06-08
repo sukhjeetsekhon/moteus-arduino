@@ -100,8 +100,12 @@ class MoteusController {
     Options() {}
   };
 
+  /// Constructs a controller bound to `can_bus`.
+  ///
+  /// The `query_format` from `options` is serialized once and reused
+  /// when `default_query` is enabled.
   MoteusController(CanBus& can_bus,
-         const Options& options = {})
+                   const Options& options = {})
       : can_bus_(can_bus),
         options_(options) {
     mm::CanData can_data;
@@ -129,12 +133,14 @@ class MoteusController {
   /////////////////////////////////////////
   // Query
 
+  /// Builds a query-only frame using the configured or overridden format.
   CanFdFrame MakeQuery(const mm::Query::Format* format_override = nullptr) {
     return MakeFrame(mm::EmptyMode(), {}, {},
                      format_override == nullptr ?
                      &options_.query_format : format_override);
   }
 
+  /// Sends a query and waits for the response.
   bool SetQuery(const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeQuery(query_override));
   }
@@ -143,14 +149,17 @@ class MoteusController {
   /////////////////////////////////////////
   // StopMode
 
+  /// Builds a stop command frame.
   CanFdFrame MakeStop(const mm::Query::Format* query_override = nullptr) {
     return MakeFrame(mm::StopMode(), {}, {}, query_override);
   }
 
+  /// Sends a stop command and waits for the response.
   bool SetStop(const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeStop(query_override));
   }
 
+  /// Sends a stop command and returns immediately.
   void BeginStop(const mm::Query::Format* query_override = nullptr) {
     BeginSingleCommand(MakeStop(query_override));
   }
@@ -160,14 +169,17 @@ class MoteusController {
   // BrakeMode
 
 
+  /// Builds a brake command frame.
   CanFdFrame MakeBrake(const mm::Query::Format* query_override = nullptr) {
     return MakeFrame(mm::BrakeMode(), {}, {}, query_override);
   }
 
+  /// Sends a brake command and waits for the response.
   bool SetBrake(const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeBrake(query_override));
   }
 
+  /// Sends a brake command and returns immediately.
   void BeginBrake(const mm::Query::Format* query_override = nullptr) {
     BeginSingleCommand(MakeBrake(query_override));
   }
@@ -176,6 +188,7 @@ class MoteusController {
   /////////////////////////////////////////
   // PositionMode
 
+  /// Builds a position-mode command frame.
   CanFdFrame MakePosition(const mm::PositionMode::Command& cmd,
                           const mm::PositionMode::Format* command_override = nullptr,
                           const mm::Query::Format* query_override = nullptr) {
@@ -186,6 +199,7 @@ class MoteusController {
                      query_override);
   }
 
+  /// Sends a position-mode command and waits for the response.
   bool SetPosition(const mm::PositionMode::Command& cmd,
                    const mm::PositionMode::Format* command_override = nullptr,
                    const mm::Query::Format* query_override = nullptr) {
@@ -193,6 +207,7 @@ class MoteusController {
         MakePosition(cmd, command_override, query_override));
   }
 
+  /// Sends a position-mode command and returns immediately.
   void BeginPosition(const mm::PositionMode::Command& cmd,
                      const mm::PositionMode::Format* command_override = nullptr,
                      const mm::Query::Format* query_override = nullptr) {
@@ -200,6 +215,7 @@ class MoteusController {
         MakePosition(cmd, command_override, query_override));
   }
 
+  /// Sends position commands until `trajectory_complete` is observed.
   bool SetPositionWaitComplete(const mm::PositionMode::Command& cmd,
                                double period_s,
                                const mm::PositionMode::Format* command_override = nullptr,
@@ -232,6 +248,7 @@ class MoteusController {
   /////////////////////////////////////////
   // VFOCMode
 
+  /// Builds a voltage-FOC command frame.
   CanFdFrame MakeVFOC(const mm::VFOCMode::Command& cmd,
                       const mm::VFOCMode::Format* command_override = nullptr,
                       const mm::Query::Format* query_override = nullptr) {
@@ -242,12 +259,14 @@ class MoteusController {
                      query_override);
   }
 
+  /// Sends a voltage-FOC command and waits for the response.
   bool SetVFOC(const mm::VFOCMode::Command& cmd,
                const mm::VFOCMode::Format* command_override = nullptr,
                const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeVFOC(cmd, command_override, query_override));
   }
 
+  /// Sends a voltage-FOC command and returns immediately.
   void BeginVFOC(const mm::VFOCMode::Command& cmd,
                  const mm::VFOCMode::Format* command_override = nullptr,
                  const mm::Query::Format* query_override = nullptr) {
@@ -258,6 +277,7 @@ class MoteusController {
   /////////////////////////////////////////
   // CurrentMode
 
+  /// Builds a current-mode command frame.
   CanFdFrame MakeCurrent(const mm::CurrentMode::Command& cmd,
                          const mm::CurrentMode::Format* command_override = nullptr,
                          const mm::Query::Format* query_override = nullptr) {
@@ -268,12 +288,14 @@ class MoteusController {
                      query_override);
   }
 
+  /// Sends a current-mode command and waits for the response.
   bool SetCurrent(const mm::CurrentMode::Command& cmd,
                   const mm::CurrentMode::Format* command_override = nullptr,
                   const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeCurrent(cmd, command_override, query_override));
   }
 
+  /// Sends a current-mode command and returns immediately.
   void BeginCurrent(const mm::CurrentMode::Command& cmd,
                     const mm::CurrentMode::Format* command_override = nullptr,
                     const mm::Query::Format* query_override = nullptr) {
@@ -284,6 +306,7 @@ class MoteusController {
   /////////////////////////////////////////
   // StayWithinMode
 
+  /// Builds a stay-within command frame.
   CanFdFrame MakeStayWithin(const mm::StayWithinMode::Command& cmd,
                             const mm::StayWithinMode::Format* command_override = nullptr,
                             const mm::Query::Format* query_override = nullptr) {
@@ -294,12 +317,14 @@ class MoteusController {
                      query_override);
   }
 
+  /// Sends a stay-within command and waits for the response.
   bool SetStayWithin(const mm::StayWithinMode::Command& cmd,
                      const mm::StayWithinMode::Format* command_override = nullptr,
                      const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeStayWithin(cmd, command_override, query_override));
   }
 
+  /// Sends a stay-within command and returns immediately.
   void BeginStayWithin(const mm::StayWithinMode::Command& cmd,
                        const mm::StayWithinMode::Format* command_override = nullptr,
                        const mm::Query::Format* query_override = nullptr) {
@@ -310,6 +335,7 @@ class MoteusController {
   /////////////////////////////////////////
   // ZeroVelocityMode
 
+  /// Builds a zero-velocity command frame.
   CanFdFrame MakeZeroVelocity(const mm::ZeroVelocityMode::Command& cmd = {},
                               const mm::ZeroVelocityMode::Format* command_override = nullptr,
                               const mm::Query::Format* query_override = nullptr) {
@@ -320,12 +346,14 @@ class MoteusController {
                      query_override);
   }
 
+  /// Sends a zero-velocity command and waits for the response.
   bool SetZeroVelocity(const mm::ZeroVelocityMode::Command& cmd = {},
                        const mm::ZeroVelocityMode::Format* command_override = nullptr,
                        const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeZeroVelocity(cmd, command_override, query_override));
   }
 
+  /// Sends a zero-velocity command and returns immediately.
   void BeginZeroVelocity(const mm::ZeroVelocityMode::Command& cmd = {},
                          const mm::ZeroVelocityMode::Format* command_override = nullptr,
                          const mm::Query::Format* query_override = nullptr) {
@@ -336,6 +364,7 @@ class MoteusController {
   /////////////////////////////////////////
   // GpioRead
 
+  /// Builds a GPIO read command frame.
   CanFdFrame MakeGpioRead(const mm::GpioRead::Command& cmd = {},
                           const mm::GpioRead::Format* command_override = nullptr,
                           const mm::Query::Format* query_override = nullptr) {
@@ -346,12 +375,14 @@ class MoteusController {
                      query_override);
   }
 
+  /// Sends a GPIO read command and waits for the response.
   bool SetGpioRead(const mm::GpioRead::Command& cmd = {},
                    const mm::GpioRead::Format* command_override = nullptr,
                    const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeGpioRead(cmd, command_override, query_override));
   }
 
+  /// Sends a GPIO read command and returns immediately.
   void BeginGpioRead(const mm::GpioRead::Command& cmd = {},
                      const mm::GpioRead::Format* command_override = nullptr,
                      const mm::Query::Format* query_override = nullptr) {
@@ -362,6 +393,7 @@ class MoteusController {
   /////////////////////////////////////////
   // AuxPwmWrite
 
+  /// Builds an auxiliary PWM write command frame.
   CanFdFrame MakeAuxPwmWrite(const mm::AuxPwmWrite::Command& cmd,
                              const mm::AuxPwmWrite::Format* command_override = nullptr,
                              const mm::Query::Format* query_override = nullptr) {
@@ -372,12 +404,14 @@ class MoteusController {
                      query_override);
   }
 
+  /// Sends an auxiliary PWM write command and waits for the response.
   bool SetAuxPwmWrite(const mm::AuxPwmWrite::Command& cmd,
                       const mm::AuxPwmWrite::Format* command_override = nullptr,
                       const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeAuxPwmWrite(cmd, command_override, query_override));
   }
 
+  /// Sends an auxiliary PWM write command and returns immediately.
   void BeginAuxPwmWrite(const mm::AuxPwmWrite::Command& cmd,
                         const mm::AuxPwmWrite::Format* command_override = nullptr,
                         const mm::Query::Format* query_override = nullptr) {
@@ -388,6 +422,7 @@ class MoteusController {
   /////////////////////////////////////////
   // OutputNearest
 
+  /// Builds an output-nearest command frame.
   CanFdFrame MakeOutputNearest(const mm::OutputNearest::Command& cmd,
                                const mm::OutputNearest::Format* command_override = nullptr,
                                const mm::Query::Format* query_override = nullptr) {
@@ -398,12 +433,14 @@ class MoteusController {
                      query_override);
   }
 
+  /// Sends an output-nearest command and waits for the response.
   bool SetOutputNearest(const mm::OutputNearest::Command& cmd,
                         const mm::OutputNearest::Format* command_override = nullptr,
                         const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeOutputNearest(cmd, command_override, query_override));
   }
 
+  /// Sends an output-nearest command and returns immediately.
   void BeginOutputNearest(const mm::OutputNearest::Command& cmd,
                           const mm::OutputNearest::Format* command_override = nullptr,
                           const mm::Query::Format* query_override = nullptr) {
@@ -414,6 +451,7 @@ class MoteusController {
   /////////////////////////////////////////
   // OutputExact
 
+  /// Builds an output-exact command frame.
   CanFdFrame MakeOutputExact(const mm::OutputExact::Command& cmd,
                                const mm::OutputExact::Format* command_override = nullptr,
                                const mm::Query::Format* query_override = nullptr) {
@@ -424,12 +462,14 @@ class MoteusController {
                      query_override);
   }
 
+  /// Sends an output-exact command and waits for the response.
   bool SetOutputExact(const mm::OutputExact::Command& cmd,
                       const mm::OutputExact::Format* command_override = nullptr,
                       const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeOutputExact(cmd, command_override, query_override));
   }
 
+  /// Sends an output-exact command and returns immediately.
   void BeginOutputExact(const mm::OutputExact::Command& cmd,
                         const mm::OutputExact::Format* command_override = nullptr,
                         const mm::Query::Format* query_override = nullptr) {
@@ -440,9 +480,10 @@ class MoteusController {
   /////////////////////////////////////////
   // RequireReindex
 
+  /// Builds a require-reindex command frame.
   CanFdFrame MakeRequireReindex(const mm::RequireReindex::Command& cmd,
                                 const mm::RequireReindex::Format* command_override = nullptr,
-                               const mm::Query::Format* query_override = nullptr) {
+                                const mm::Query::Format* query_override = nullptr) {
     return MakeFrame(mm::RequireReindex(),
                      cmd,
                      (command_override == nullptr ?
@@ -450,12 +491,14 @@ class MoteusController {
                      query_override);
   }
 
+  /// Sends a require-reindex command and waits for the response.
   bool SetRequireReindex(const mm::RequireReindex::Command& cmd,
                          const mm::RequireReindex::Format* command_override = nullptr,
                          const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeRequireReindex(cmd, command_override, query_override));
   }
 
+  /// Sends a require-reindex command and returns immediately.
   void BeginRequireReindex(const mm::RequireReindex::Command& cmd,
                            const mm::RequireReindex::Format* command_override = nullptr,
                            const mm::Query::Format* query_override = nullptr) {
@@ -466,9 +509,11 @@ class MoteusController {
   /////////////////////////////////////////
   // RecapturePositionVelocity
 
-  CanFdFrame MakeRecapturePositionVelocity(const mm::RecapturePositionVelocity::Command& cmd,
-                                const mm::RecapturePositionVelocity::Format* command_override = nullptr,
-                               const mm::Query::Format* query_override = nullptr) {
+  /// Builds a recapture-position-velocity command frame.
+  CanFdFrame MakeRecapturePositionVelocity(
+      const mm::RecapturePositionVelocity::Command& cmd,
+      const mm::RecapturePositionVelocity::Format* command_override = nullptr,
+      const mm::Query::Format* query_override = nullptr) {
     return MakeFrame(mm::RecapturePositionVelocity(),
                      cmd,
                      (command_override == nullptr ?
@@ -476,15 +521,19 @@ class MoteusController {
                      query_override);
   }
 
-  bool SetRecapturePositionVelocity(const mm::RecapturePositionVelocity::Command& cmd,
-                                    const mm::RecapturePositionVelocity::Format* command_override = nullptr,
-                                    const mm::Query::Format* query_override = nullptr) {
+  /// Sends a recapture-position-velocity command and waits for the response.
+  bool SetRecapturePositionVelocity(
+      const mm::RecapturePositionVelocity::Command& cmd,
+      const mm::RecapturePositionVelocity::Format* command_override = nullptr,
+      const mm::Query::Format* query_override = nullptr) {
     return ExecuteSingleCommand(MakeRecapturePositionVelocity(cmd, command_override, query_override));
   }
 
-  void BeginRecapturePositionVelocity(const mm::RecapturePositionVelocity::Command& cmd,
-                                      const mm::RecapturePositionVelocity::Format* command_override = nullptr,
-                                      const mm::Query::Format* query_override = nullptr) {
+  /// Sends a recapture-position-velocity command and returns immediately.
+  void BeginRecapturePositionVelocity(
+      const mm::RecapturePositionVelocity::Command& cmd,
+      const mm::RecapturePositionVelocity::Format* command_override = nullptr,
+      const mm::Query::Format* query_override = nullptr) {
     BeginSingleCommand(MakeRecapturePositionVelocity(cmd, command_override, query_override));
   }
 
@@ -503,6 +552,7 @@ class MoteusController {
     kExpectSingleLine,
   };
 
+  /// Sends a diagnostic command string and returns the response text.
   String DiagnosticCommand(const String& message_in,
                            DiagnosticReplyMode reply_mode = kExpectOK) {
     {
@@ -606,6 +656,7 @@ class MoteusController {
     }
   }
 
+  /// Reads a diagnostic channel and returns the response payload.
   String SetDiagnosticRead(int channel = 1) {
     for (int attempt = 0;
          attempt <= options_.diagnostic_retry_count;
@@ -645,6 +696,7 @@ class MoteusController {
     return "";
   }
 
+  /// Drains all queued diagnostic responses from a channel.
   void SetDiagnosticFlush(int channel = 1) {
     while (true) {
       const auto response = SetDiagnosticRead(channel);
@@ -660,6 +712,7 @@ class MoteusController {
   /// Look for a response to a previous command.  Return true if one
   /// has been received.  The parsed results can be seen in
   /// Moteus::last_result()
+  /// Checks the transport for a response to a previously sent command.
   bool Poll() {
     const auto now = moteus_micros();
 
@@ -708,6 +761,7 @@ class MoteusController {
     return true;
   }
 
+  /// Serializes and transmits a frame without waiting for a response.
   bool BeginSingleCommand(const mm::CanFdFrame& frame) {
     CANFDMessage can_message;
     can_message.id = frame.arbitration_id;
@@ -743,6 +797,7 @@ class MoteusController {
     return frame.reply_required;
   }
 
+  /// Sends a frame and blocks until the expected response is observed.
   bool ExecuteSingleCommand(const mm::CanFdFrame& frame) {
     const bool reply_required = BeginSingleCommand(frame);
 
@@ -775,6 +830,7 @@ class MoteusController {
     kReplyRequired,
   };
 
+  /// Builds a frame with the controller's default addressing.
   CanFdFrame DefaultFrame(ReplyMode reply_mode = kReplyRequired) {
     CanFdFrame result;
     result.destination = options_.id;
@@ -790,6 +846,7 @@ class MoteusController {
     return result;
   }
 
+  /// Builds a command frame for the supplied command type.
   template <typename CommandType>
   CanFdFrame MakeFrame(const CommandType&,
                        const typename CommandType::Command& cmd,
@@ -820,6 +877,7 @@ class MoteusController {
     int8_t size = 0;
   };
 
+  /// Builds a diagnostic read frame for `channel`.
   CanFdFrame MakeDiagnosticReadFrame(int channel) {
     auto frame = DefaultFrame(kReplyRequired);
     mm::WriteCanData write_frame(frame.data, &frame.size);
@@ -838,6 +896,7 @@ class MoteusController {
     return frame;
   }
 
+  /// Parses a diagnostic response and tracks flow-control state.
   DiagnosticParsed ParseDiagnosticResponse(
       const uint8_t* data, uint8_t size, int channel) {
     DiagnosticParsed result;
