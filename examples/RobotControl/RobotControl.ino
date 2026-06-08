@@ -1,12 +1,16 @@
 #include <MoteusAcan2517fd.h>
 
 constexpr short VELOCITY = 1;
-constexpr float ANGLE_DEGREES = 30;
 constexpr float TURN_SPEED = -90; // in degrees
+constexpr float SHORTKICK_POWER = 10;
 
-constexpr short TEST_NUM_MOTORS = 2;
-constexpr short NUM_MOTORS = 5;
-constexpr short NUM_WHEELS = 4;
+constexpr byte TEST_NUM_MOTORS = 2;
+constexpr byte NUM_MOTORS = 5;
+constexpr byte NUM_WHEELS = 4;
+constexpr byte TEST_DRIBBLER_INDEX = 0; // dribbler index for testing
+constexpr byte DRIBBLER_INDEX = 4; // true dribbler index
+constexpr float DASH_POWER = 1;
+constexpr float DASH_ANGLE = 30; // in degrees
 
 // MCP2517 pins for CAN FD Arduino Shield
 constexpr byte MCP2517_SCK = 13;  // SCK
@@ -47,7 +51,6 @@ constexpr bool invert[NUM_WHEELS] = {
    true
 };
 
-void dash(Moteus* wheels[NUM_WHEELS], float wheelAngles[NUM_WHEELS], bool invertRotation[NUM_WHEELS], float power, float direction);
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -86,10 +89,15 @@ void setup() {
 }
 
 void loop() {
+   static const auto start = millis();
+   auto now = millis();
 
-   turn(motors,TURN_SPEED);
-   //dash(motors,angles,invert,VELOCITY,ANGLE_DEGREES);
-  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+   if (now - start > 10000) { // if 10s have passed
+      stopLocomotion(motors);
+   } else {
+      dash(motors,angles,invert,DASH_POWER,DASH_ANGLE);
+   }
+
 }
 
 /**
@@ -100,12 +108,12 @@ void loop() {
  * @param power velocity of motor in rev/s
  * @param direction direction of motion in degrees
  */
-void dash(Moteus* wheels[NUM_WHEELS], float wheelAngles[NUM_WHEELS], bool invertRotation[NUM_WHEELS], float power, float direction) {
+void dash(Moteus* wheels[NUM_WHEELS], float wheelAngles[NUM_WHEELS], bool invertRotation[NUM_WHEELS], float dashPower, float direction) {
    direction *= PI / 180; // convert direction from degrees into radians
    Moteus::PositionMode::Command cmd;
    cmd.position = NaN;  // Pure velocity mode.
    for(int i=0;i<TEST_NUM_MOTORS;i++) {
-      cmd.velocity = power * cos(wheelAngles[i] - direction);
+      cmd.velocity = dashPower * cos(wheelAngles[i] - direction);
       if (invertRotation[i]) {
          cmd.velocity *= -1;
       }
@@ -116,15 +124,62 @@ void dash(Moteus* wheels[NUM_WHEELS], float wheelAngles[NUM_WHEELS], bool invert
 /**
  * @brief rotate the robot at some rotational velocity
  * @param wheels array wheel motors
- * @param speed rotational velocity in degrees/s
+ * @param turnSpeed rotational velocity in degrees/s
  * @warning the speed is not certain until tested on a robot 
  */
-void turn(Moteus* wheels[NUM_WHEELS], float speed) {
+void turn(Moteus* wheels[NUM_WHEELS], float turnSpeed) {
    constexpr float arbitraryMultipler = 1; // this is for tuning during testing on a robot to match the specified rotational velocity
    Moteus::PositionMode::Command cmd;
    cmd.position = NaN;  // Pure velocity mode.
    for(int i=0;i<TEST_NUM_MOTORS;i++) {
-      cmd.velocity = -speed * arbitraryMultipler / 120; // convert rotational speed of robot to rotational speed of motors
+      // convert from deg/s to wheel rev/s
+      // deg/s / 360deg * robot circumference / robot circumference * 3 wheel revs per robot circumference = wheel rev/s
+      cmd.velocity = -turnSpeed * arbitraryMultipler / 120; // convert rotational speed of robot to rotational speed of motors
       motors[i]->SetPosition(cmd);
    }
+}
+
+/**
+ * @brief turn the dribbler motor on
+ * @param motors array of motors
+ * @warning the optimal dribbler speed is unknown until robot testing
+*/
+void dribblerCatch(Moteus* motors[NUM_MOTORS]) {
+  constexpr float invertDribblerRotation = 1; // change to -1 if dribbler spins the wrong way
+  constexpr float dribblerSpeed = 10; // this is for tuning the optimal dribbler speed during testing
+  Moteus::PositionMode::Command cmd;
+  cmd.position = NaN;  // Pure velocity mode.
+  cmd.velocity = invertDribblerRotation * dribblerSpeed;
+  motors[TEST_DRIBBLER_INDEX]->SetPosition(cmd);
+}
+
+/**
+ * @brief apply brake to the dribbler motor
+ * @param motors array of motors
+*/
+void stopDribbler(Moteus* motors[NUM_MOTORS]) {
+  motors[TEST_DRIBBLER_INDEX]->SetBrake();
+}
+
+/**
+ * @brief apply brake to all wheel motors
+ * @param motors array of wheel motors
+*/
+void stopLocomotion(Moteus* motors[NUM_WHEELS]) {
+  for(int i=0;i<NUM_WHEELS;i++) {
+    motors[i]->SetBrake();
+  }
+}
+
+/**
+ * @brief spin the dribbler backwards to spit the ball forward
+ * @param motors array of motors
+ * @param shortKickPower rotation speed of dribbler as a positive value
+*/
+void shortKick(Moteus* motors[NUM_MOTORS], float shortKickPower) {
+  constexpr float invertDribblerRotation = -1; // change to 1 if dribbler spins the wrong way
+  Moteus::PositionMode::Command cmd;
+  cmd.position = NaN;  // Pure velocity mode.
+  cmd.velocity = invertDribblerRotation * shortKickPower;
+  motors[TEST_DRIBBLER_INDEX]->SetPosition(cmd);
 }
