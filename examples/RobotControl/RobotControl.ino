@@ -1,8 +1,8 @@
 #include <MoteusAcan2517fd.h>
 
-#define VELOCITY 1
-#define TEST_NUM_MOTORS 2
+constexpr short VELOCITY = 1;
 
+constexpr short TEST_NUM_MOTORS = 2;
 constexpr short NUM_MOTORS = 5;
 
 // MCP2517 pins for CAN FD Arduino Shield
