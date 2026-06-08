@@ -1,6 +1,9 @@
 #include <MoteusAcan2517fd.h>
 
 #define VELOCITY 1
+#define TEST_NUM_MOTORS 2
+
+constexpr short NUM_MOTORS = 5;
 
 // MCP2517 pins for CAN FD Arduino Shield
 constexpr byte MCP2517_SCK = 13;  // SCK
@@ -13,8 +16,7 @@ constexpr long CANFD_BITRATE = 1000ll * 1000ll;  // 1 MBit bitrate for CANFD
 
 ACAN2517FD can(MCP2517_CS, SPI, MCP2517_INT);
 
-Moteus* Motor1;
-Moteus* Motor2;
+const Moteus* motors[NUM_MOTORS] = {nullptr};
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -41,21 +43,16 @@ void setup() {
     delay(1000);
   }
 
-   Motor1 = new Moteus(can, []() {
-      Moteus::Options options;
-      options.id = 1;
-      return options;
-   }());
+   for (int i=1;i<=TEST_NUM_MOTORS;i++) {
+      motors[i] = new Moteus(can, [i]() {
+         Moteus::Options options;
+         options.id = i;
+         return options;
+      }());
+      // Clear any faults
+      motors[i]->SetStop();
+   }
 
-   Motor2 = new Moteus(can, []() {
-      Moteus::Options options;
-      options.id = 2;
-      return options;
-   }());
-
-  // Clear any faults on motor ID 1.
-  Motor1->SetStop();
-  Motor2->SetStop();
   Serial.println(F("motor 1 ready"));
 }
 
@@ -65,8 +62,8 @@ void loop() {
   cmd.position = NaN;  // Pure velocity mode.
   cmd.velocity = VELOCITY;
 
-   Motor1->SetPosition(cmd);
-   Motor2->SetPosition(cmd);
-
+   for(int i=1;i<=TEST_NUM_MOTORS;i++) {
+      motors[i]->SetPosition(cmd);
+   }
   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
