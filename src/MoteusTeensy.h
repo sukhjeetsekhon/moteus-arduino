@@ -22,20 +22,26 @@
 ///
 /// Requires the ACAN_T4 library to be installed.
 
+/// @file
+///
+/// Adapter for using `MoteusController` with Teensy 4.x CAN-FD via
+/// the `ACAN_T4` library.
 #pragma once
 
 #include <ACAN_T4.h>
 #include "Moteus.h"
 
-/// Adapter that wraps an ACAN_T4 bus instance to provide the
-/// interface expected by MoteusController.
+/// Adapter that wraps an `ACAN_T4` bus instance to provide the
+/// interface expected by `MoteusController`.
 class MoteusTeensyCanFD {
  public:
-  /// Construct with a reference to an ACAN_T4 bus (e.g., ACAN_T4::can3)
-  /// and the FD settings used to initialize it.  The settings are stored
-  /// so that poll() can reinitialize the controller on bus-off recovery.
+  /// Construct with a reference to an `ACAN_T4` bus, for example
+  /// `ACAN_T4::can3`, and the FD settings used to initialize it.
   ///
-  /// The caller must call bus.beginFD(settings) in their setup() before
+  /// The settings are stored so that `poll()` can reinitialize the
+  /// controller on bus-off recovery.
+  ///
+  /// The caller must call `bus.beginFD(settings)` in setup before
   /// using this adapter.
   MoteusTeensyCanFD(ACAN_T4& bus, const ACAN_T4FD_Settings& settings)
       : bus_(bus), settings_(settings) {}
@@ -50,10 +56,13 @@ class MoteusTeensyCanFD {
     }
   }
 
+  /// Returns true when a received CAN-FD frame is available.
   bool available() { return bus_.availableFD(); }
 
+  /// Copies the next received frame into `msg`.
   bool receive(CANFDMessage& msg) { return bus_.receiveFD(msg); }
 
+  /// Sends a frame and returns true on success.
   bool tryToSend(const CANFDMessage& msg) {
     return bus_.tryToSendReturnStatusFD(msg) == 0;
   }
@@ -63,4 +72,5 @@ class MoteusTeensyCanFD {
   ACAN_T4FD_Settings settings_;
 };
 
+/// Convenience alias for the Teensy 4.x transport.
 using Moteus = MoteusController<MoteusTeensyCanFD>;

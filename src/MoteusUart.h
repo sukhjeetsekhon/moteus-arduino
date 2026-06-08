@@ -32,6 +32,10 @@
 ///   int read()
 ///   size_t write(const uint8_t*, size_t)
 
+/// @file
+///
+/// UART transport adapter for `MoteusController` using the fdcanusb
+/// text protocol.
 #pragma once
 
 #include <stdint.h>
@@ -48,17 +52,21 @@ extern uint32_t moteus_micros();
 inline uint32_t moteus_uart_micros() { return moteus_micros(); }
 #endif
 
+/// UART transport adapter for the fdcanusb text protocol.
+///
+/// The `SerialPort` template parameter must provide `available()`,
+/// `read()`, `write(const uint8_t*, size_t)`, and `begin()`.
 template <typename SerialPort>
 class MoteusUart {
  public:
   struct Options {
-    // Default baud rate for UART communication with moteus.
+    /// Default baud rate for UART communication with moteus.
     long baudrate = 921600;
 
-    // Maximum number of retry attempts when waiting for OK.
+    /// Maximum retry attempts while waiting for an `OK` response.
     int max_retries = 3;
 
-    // Timeout in microseconds for waiting for an OK response.
+    /// Timeout in microseconds while waiting for `OK`.
     uint32_t ok_timeout_us = 200000;
 
     Options() {}
@@ -69,12 +77,12 @@ class MoteusUart {
         options_(options) {
   }
 
-  /// Call once in setup() to initialize the serial port.
+  /// Initializes the serial port.
   void begin() {
     serial_.begin(options_.baudrate);
   }
 
-  /// Read any available serial data into the line buffer.
+  /// Reads available serial data into the line buffer.
   void poll() {
     while (serial_.available() > 0) {
       const int c = serial_.read();
@@ -103,7 +111,7 @@ class MoteusUart {
     return rcv_available_;
   }
 
-  /// Copy the received frame into @p msg and clear the available flag.
+  /// Copies the received frame into `msg` and clears the available flag.
   bool receive(CANFDMessage& msg) {
     if (!rcv_available_) { return false; }
     msg = rcv_message_;
@@ -111,7 +119,7 @@ class MoteusUart {
     return true;
   }
 
-  /// Format and send a CAN frame as a text command, then wait for OK.
+  /// Formats and sends a CAN frame as a text command, then waits for `OK`.
   bool tryToSend(const CANFDMessage& msg) {
     for (int attempt = 0; attempt <= options_.max_retries; attempt++) {
       char buf[256];

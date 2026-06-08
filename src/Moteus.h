@@ -12,15 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// @file
+///
+/// Primary controller API for commanding and monitoring a moteus servo.
+///
+/// This header pulls together the protocol layer and the transport
+/// interface, then exposes `MoteusController<CanBus>` plus the common
+/// command helpers.
 #pragma once
 
 #include "moteus_protocol.h"
 #include "moteus_can.h"
 
-// Platform timing abstraction.  On Arduino, these are provided
-// automatically.  On bare-metal platforms, the user must implement
-// moteus_micros() and moteus_delay_ms() and link them into the
-// project.  See examples/Stm32BareMetal/ for a complete example.
+// Platform timing abstraction. On Arduino, these are provided
+// automatically. On bare-metal platforms, the user must implement
+// `moteus_micros()` and `moteus_delay_ms()` and link them into the
+// project. See `examples/Stm32BareMetal/` for a complete example.
 #ifdef ARDUINO
 #include <Arduino.h>
 inline uint32_t moteus_micros() { return ::micros(); }
@@ -32,21 +39,20 @@ extern void moteus_delay_ms(uint32_t ms);
 
 namespace mm = mjbots::moteus;
 
-/// This is the primary interface to a moteus controller.  One
-/// instance of this class should be created per controller that is
-/// commanded or monitored.
+/// Primary interface to a moteus controller.
+///
+/// One instance of this class is used per controller that is commanded
+/// or monitored.
 ///
 /// The primary control functions each have 3 possible forms:
 ///
-///  1. A "Make" variant which constructs a CanFdFrame to be used in a
-///     later call to Transport::Cycle.
+///  1. A `Make` variant which constructs a `CanFdFrame` for later use.
 ///
-///  2. A "Set" variant which sends a command to the controller and
-///     waits for a response in a blocking manner.
+///  2. A `Set` variant which sends a command and waits for a response
+///     in a blocking manner.
 ///
-///  3. A "Begin" variant which sends a command and requires that the
-///     user call Poll() regularly to check for a response, and then
-///     retrieve that response from MoteusController::last_result().
+///  3. A `Begin` variant which sends a command and requires that
+///     `Poll()` be called regularly before reading `last_result()`.
 template <typename CanBus>
 class MoteusController {
  public:
@@ -68,30 +74,27 @@ class MoteusController {
   static constexpr mm::Resolution kFloat = mm::Resolution::kFloat;
 
   struct Options {
-    // The ID of the servo to communicate with.
+    /// Servo ID to communicate with.
     int8_t id = 1;
 
-    // The source ID to use for the commanding node (i.e. the host or
-    // master).
+    /// Source ID used for the commanding node.
     int8_t source = 0;
 
     mm::Query::Format query_format;
 
-    // Use the given prefix for all CAN IDs.
+    /// CAN prefix applied to all arbitration IDs.
     uint16_t can_prefix = 0x0000;
 
-    // Disable BRS on outgoing frames.
+    /// Disables bit-rate switching on outgoing frames.
     bool disable_brs = true;
 
-    // Request the configured set of registers as a query with every
-    // command.
+    /// Requests the configured register set with every command.
     bool default_query = true;
 
+    /// Minimum wait time for a response, in microseconds.
     uint16_t min_rcv_wait_us = 2000;
 
-    // Maximum number of retries for diagnostic read operations when
-    // no response is received.  Set to a non-zero value for UART
-    // connections where replies can be lost.
+    /// Maximum retries for diagnostic reads when no response is received.
     int diagnostic_retry_count = 0;
 
     Options() {}
@@ -111,12 +114,15 @@ class MoteusController {
   }
 
   struct Result {
+    /// Timestamp in microseconds when this result was received.
     unsigned long timestamp = 0;
+    /// Raw frame received from the transport.
     CanFdFrame frame;
+    /// Parsed query values from `frame`.
     mm::Query::Result values;
   };
 
-  // The most recent result from any command.
+  /// Most recent result from any command.
   const Result& last_result() const { return last_result_; }
 
 

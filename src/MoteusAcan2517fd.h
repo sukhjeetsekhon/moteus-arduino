@@ -22,9 +22,14 @@
 ///
 /// Requires the ACAN2517FD library to be installed.
 
+/// @file
+///
+/// Adapter for using `MoteusController` with the `ACAN2517FD` CAN-FD
+/// library.
 #pragma once
 
 #include <ACAN2517FD.h>
 #include "Moteus.h"
 
+/// Convenience alias for the ACAN2517FD transport.
 using Moteus = MoteusController<ACAN2517FD>;

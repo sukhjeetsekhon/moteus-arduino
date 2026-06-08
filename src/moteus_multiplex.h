@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// @file
+///
+/// Core multiplex encoding and decoding helpers for moteus CAN-FD
+/// messages.
 #pragma once
 
 #include <math.h>
@@ -29,7 +33,7 @@
 namespace mjbots {
 namespace moteus {
 
-/// Each value can be sent or received as one of the following.
+/// Resolution used when encoding or decoding a register value.
 enum Resolution : int8_t {
   kInt8 = 0,
   kInt16 = 1,
@@ -38,7 +42,7 @@ enum Resolution : int8_t {
   kIgnore,
 };
 
-/// A vocabulary type for the basic data in a CAN-FD frame.
+/// Buffer for raw CAN-FD payload bytes.
 struct CanData {
   uint8_t data[64] = {};
   uint8_t size = 0;
@@ -140,8 +144,7 @@ T Saturate(double value, double scale) {
 }
 }
 
-/// This class can be used to append values to the end of a CAN-FD
-/// frame.
+/// Appends typed values to the end of a CAN-FD frame.
 class WriteCanData {
  public:
   WriteCanData(CanData* frame) : data_(&frame->data[0]), size_(&frame->size) {}
@@ -283,7 +286,7 @@ class WriteCanData {
   uint8_t* const size_;
 };
 
-/// Read typed values from a CAN frame.
+/// Reads typed values from a CAN-FD payload.
 class MultiplexParser {
  public:
   MultiplexParser(const CanData* frame)
@@ -580,8 +583,7 @@ class MultiplexParser {
   uint16_t current_register_ = 0;
 };
 
-/// Determines how to group registers when encoding them to minimize
-/// the required bytes.
+/// Groups adjacent registers to minimize encoded size.
 class WriteCombiner {
  public:
   WriteCombiner(WriteCanData* frame,

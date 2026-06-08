@@ -19,6 +19,9 @@
 /// it is designed to be usable in "minimal-C++" environments like
 /// Arduino, in addition to fully standards conforming environments.
 
+/// @file
+///
+/// Moteus register map, command types, and protocol serializers.
 #pragma once
 
 #include <string.h>
@@ -42,9 +45,7 @@
 namespace mjbots {
 namespace moteus {
 
-/// This is a single CAN-FD frame, its headers, and other associated
-/// metadata, like which bus the message was sent or received from in
-/// multi-bus systems.
+/// Single CAN-FD frame plus moteus-specific metadata.
 struct CanFdFrame {
   ///////////////////////////////////////////
   /// First are the raw data from the bus.
@@ -91,9 +92,10 @@ struct CanFdFrame {
 };
 
 
-/// The expected version associated with register 0x102.  If it
-/// differs from this, then semantics of one or more registers may
-/// have changed.
+/// Expected version associated with register `0x102`.
+///
+/// If it differs from this, then semantics of one or more registers
+/// may have changed.
 enum {
   kCurrentRegisterMapVersion = 5,
 };
@@ -261,18 +263,8 @@ enum class HomeState {
 };
 
 
-////////////////////////////////////////////////////////////////
-// Each command that can be issued is represented by a structure below
-// with a few different sub-structs.  Possibilities are:
-//
-//  'Command' items that are serialized in an outgoing message
-//  'Format'  the corresponding resolution for each item in 'Command'
-//  'Result'  the deserialized version of a response
-//
-// Additionally, there are two static methods possible:
-//
-//  'Make' - take a Command and Format, and serialize it
-//  'Parse' - deserialize CAN data into a 'Result' structure
+// Each command below uses nested `Command`, `Format`, and `Result`
+// types to describe serialization and parsing.
 
 struct EmptyMode {
   struct Command {};

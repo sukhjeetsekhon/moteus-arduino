@@ -17,6 +17,9 @@
 /// Provides a fallback CANFDMessage definition for platforms that do
 /// not use an ACAN library, plus common CAN-FD DLC utilities.
 
+/// @file
+///
+/// Common CAN-FD utilities and a fallback `CANFDMessage` definition.
 #pragma once
 
 #include <stdint.h>
@@ -72,8 +75,8 @@ class CANFDMessage {
 namespace mjbots {
 namespace moteus {
 
-/// Round a byte count up to the next valid CAN-FD frame size.
-/// Valid sizes: 0-8, 12, 16, 20, 24, 32, 48, 64.
+/// Rounds a byte count up to the next valid CAN-FD frame size.
+/// Valid sizes are 0-8, 12, 16, 20, 24, 32, 48, and 64.
 inline int8_t RoundUpDlc(int8_t size) {
   if (size <= 0) { return 0; }
   if (size <= 1) { return 1; }
@@ -94,9 +97,10 @@ inline int8_t RoundUpDlc(int8_t size) {
   return 0;
 }
 
-/// Pad a CANFDMessage to the next valid CAN-FD DLC boundary.
-/// Padding bytes are filled with 0x50 (NOP in the moteus multiplex
-/// protocol).
+/// Pads a `CANFDMessage` to the next valid CAN-FD DLC boundary.
+///
+/// Padding bytes are filled with `0x50`, which is `NOP` in the moteus
+/// multiplex protocol.
 inline void PadCan(CANFDMessage* msg) {
   const auto new_size = RoundUpDlc(msg->len);
   for (int8_t i = msg->len; i < new_size; i++) {
