@@ -13,11 +13,8 @@ constexpr long CANFD_BITRATE = 1000ll * 1000ll;  // 1 MBit bitrate for CANFD
 
 ACAN2517FD can(MCP2517_CS, SPI, MCP2517_INT);
 
-Moteus moteus1(can, []() {
-  Moteus::Options options;
-  options.id = 1;
-  return options;
-}());
+Moteus* Motor1;
+Moteus* Motor2;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -44,8 +41,21 @@ void setup() {
     delay(1000);
   }
 
+   Motor1 = new Moteus(can, []() {
+      Moteus::Options options;
+      options.id = 1;
+      return options;
+   }());
+
+   Motor2 = new Moteus(can, []() {
+      Moteus::Options options;
+      options.id = 2;
+      return options;
+   }());
+
   // Clear any faults on motor ID 1.
-  moteus1.SetStop();
+  Motor1->SetStop();
+  Motor2->SetStop();
   Serial.println(F("motor 1 ready"));
 }
 
@@ -55,7 +65,8 @@ void loop() {
   cmd.position = NaN;  // Pure velocity mode.
   cmd.velocity = VELOCITY;
 
-   moteus1.SetPosition(cmd);
+   Motor1->SetPosition(cmd);
+   Motor2->SetPosition(cmd);
 
   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
