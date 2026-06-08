@@ -1,8 +1,7 @@
 #include <MoteusAcan2517fd.h>
 
 constexpr short VELOCITY = 1;
-constexpr float ANGLE_DEGREES = -70;
-constexpr float ANGLE = ANGLE_DEGREES * PI / 180; // in radians
+constexpr float ANGLE_DEGREES = 30;
 
 constexpr short TEST_NUM_MOTORS = 2;
 constexpr short NUM_MOTORS = 5;
@@ -47,6 +46,8 @@ constexpr bool invert[NUM_WHEELS] = {
    true
 };
 
+void dash(Moteus* wheels[NUM_WHEELS], float wheelAngles[NUM_WHEELS], bool invertRotation[NUM_WHEELS], float power, float direction);
+
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -88,12 +89,27 @@ void loop() {
   Moteus::PositionMode::Command cmd;
   cmd.position = NaN;  // Pure velocity mode.
 
+   dash(motors,angles,invert,VELOCITY,ANGLE_DEGREES);
+  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+}
+
+/**
+ * @brief move the robot in a direction with a velocity power
+ * @param wheels array wheel motors
+ * @param wheelAngles angle of the wheels relative to front to back axis in radians
+ * @param invertRotation which wheels have inverted rotation from orientation
+ * @param power velocity of motor in rev/s
+ * @param direction direction of motion in degrees
+ */
+void dash(Moteus* wheels[NUM_WHEELS], float wheelAngles[NUM_WHEELS], bool invertRotation[NUM_WHEELS], float power, float direction) {
+   direction *= PI / 180; // convert direction from degrees into radians
+   Moteus::PositionMode::Command cmd;
+   cmd.position = NaN;  // Pure velocity mode.
    for(int i=0;i<TEST_NUM_MOTORS;i++) {
-      cmd.velocity = VELOCITY * cos(angles[i] - ANGLE);
-      if (invert[i]) {
+      cmd.velocity = power * cos(wheelAngles[i] - direction);
+      if (invertRotation[i]) {
          cmd.velocity *= -1;
       }
       motors[i]->SetPosition(cmd);
    }
-  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
