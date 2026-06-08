@@ -2,6 +2,7 @@
 
 constexpr short VELOCITY = 1;
 constexpr float ANGLE_DEGREES = 30;
+constexpr float TURN_SPEED = -90; // in degrees
 
 constexpr short TEST_NUM_MOTORS = 2;
 constexpr short NUM_MOTORS = 5;
@@ -86,10 +87,8 @@ void setup() {
 
 void loop() {
 
-  Moteus::PositionMode::Command cmd;
-  cmd.position = NaN;  // Pure velocity mode.
-
-   dash(motors,angles,invert,VELOCITY,ANGLE_DEGREES);
+   turn(motors,TURN_SPEED);
+   //dash(motors,angles,invert,VELOCITY,ANGLE_DEGREES);
   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
 
@@ -110,6 +109,22 @@ void dash(Moteus* wheels[NUM_WHEELS], float wheelAngles[NUM_WHEELS], bool invert
       if (invertRotation[i]) {
          cmd.velocity *= -1;
       }
+      motors[i]->SetPosition(cmd);
+   }
+}
+
+/**
+ * @brief rotate the robot at some rotational velocity
+ * @param wheels array wheel motors
+ * @param speed rotational velocity in degrees/s
+ * @warning the speed is not certain until tested on a robot 
+ */
+void turn(Moteus* wheels[NUM_WHEELS], float speed) {
+   constexpr float arbitraryMultipler = 1; // this is for tuning during testing on a robot to match the specified rotational velocity
+   Moteus::PositionMode::Command cmd;
+   cmd.position = NaN;  // Pure velocity mode.
+   for(int i=0;i<TEST_NUM_MOTORS;i++) {
+      cmd.velocity = -speed * arbitraryMultipler / 120; // convert rotational speed of robot to rotational speed of motors
       motors[i]->SetPosition(cmd);
    }
 }
