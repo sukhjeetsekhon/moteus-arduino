@@ -183,3 +183,13 @@ void shortKick(Moteus* motors[NUM_MOTORS], float shortKickPower) {
   cmd.velocity = invertDribblerRotation * shortKickPower;
   motors[TEST_DRIBBLER_INDEX]->SetPosition(cmd);
 }
+
+/**
+ * @brief activate kicker solenoid for 100ms to kick ball
+ * @param kickerPin GPIO pin for activating kicker solenoid
+ */
+void kick(const byte kickerPin) {
+   digitalWrite(kickerPin, HIGH);
+   // delay 100ms without blocking
+   digitalWrite(kickerPin, LOW);
+}
