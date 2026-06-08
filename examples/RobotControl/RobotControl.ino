@@ -1,5 +1,7 @@
 #include <MoteusAcan2517fd.h>
 
+#define VELOCITY 1
+
 // MCP2517 pins for CAN FD Arduino Shield
 constexpr byte MCP2517_SCK = 13;  // SCK
 constexpr byte MCP2517_SDI = 11;  // SDI (MOSI)
@@ -16,9 +18,6 @@ Moteus moteus1(can, []() {
   options.id = 1;
   return options;
 }());
-
-unsigned long gNextSendMillis = 0;
-double gVelocity = 0.2;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -51,24 +50,12 @@ void setup() {
 }
 
 void loop() {
-  const auto now = millis();
-  if (now < gNextSendMillis) {
-    return;
-  }
-  gNextSendMillis = now + 20;
-
-  if ((now / 1000) % 2 == 0) {
-    gVelocity = 0.2;
-  } else {
-    gVelocity = -0.2;
-  }
 
   Moteus::PositionMode::Command cmd;
   cmd.position = NaN;  // Pure velocity mode.
-  cmd.velocity = gVelocity;
+  cmd.velocity = VELOCITY;
 
-  // Send a fresh velocity command every 20 ms.
-  moteus1.SetPosition(cmd);
+   moteus1.SetPosition(cmd);
 
   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
