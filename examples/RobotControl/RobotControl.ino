@@ -1,5 +1,7 @@
 #include <MoteusAcan2517fd.h>
 
+constexpr byte KICKER_PIN = 13; // change to true kicker pin
+
 constexpr short VELOCITY = 1;
 constexpr float TURN_SPEED = -90; // in degrees
 constexpr float SHORTKICK_POWER = 10;
@@ -53,6 +55,7 @@ constexpr bool invert[NUM_WHEELS] = {
 
 
 void setup() {
+  pinMode(KICKER_PIN, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.begin(115200);
@@ -93,7 +96,7 @@ void loop() {
    auto now = millis();
 
    if (now - start > 10000) { // if 10s have passed
-      stopLocomotion(motors);
+      stop(motors,KICKER_PIN);
    } else {
       dash(motors,angles,invert,DASH_POWER,DASH_ANGLE);
    }
@@ -158,7 +161,7 @@ void dribblerCatch(Moteus* motors[NUM_MOTORS]) {
  * @param motors array of motors
 */
 void stopDribbler(Moteus* motors[NUM_MOTORS]) {
-  motors[TEST_DRIBBLER_INDEX]->SetBrake();
+  motors[DRIBBLER_INDEX]->SetBrake();
 }
 
 /**
@@ -185,6 +188,14 @@ void shortKick(Moteus* motors[NUM_MOTORS], float shortKickPower) {
 }
 
 /**
+ * @brief turn kicker solenoid off
+ * @param kickerPin GPIO pin for activating kicker solenoid
+ */
+void stopKicker(const byte kickerPin) {
+   digitalWrite(kickerPin, LOW);
+}
+
+/**
  * @brief activate kicker solenoid for 100ms to kick ball
  * @param kickerPin GPIO pin for activating kicker solenoid
  */
@@ -192,4 +203,16 @@ void kick(const byte kickerPin) {
    digitalWrite(kickerPin, HIGH);
    // delay 100ms without blocking
    digitalWrite(kickerPin, LOW);
+}
+
+
+/**
+ * @brief stop all motors and kicker
+ * @param motors array of motors
+ * @param kickerPin GPIO pin for activating kicker solenoid
+ */
+void stop(Moteus* motors[NUM_MOTORS], const byte kickerPin) {
+   stopLocomotion(motors);
+   //stopDribbler(motors); // commented out for testing because treating a wheel motor as a dribbler motor bugs it out
+   stopKicker(kickerPin);
 }
