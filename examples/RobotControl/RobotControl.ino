@@ -1,27 +1,5 @@
-#include <MoteusAcan2517fd.h>
 
-constexpr byte KICKER_PIN = 13; // change to true kicker pin
-
-constexpr short VELOCITY = 1;
-constexpr float TURN_SPEED = -90; // in degrees
-constexpr float SHORTKICK_POWER = 10;
-
-constexpr byte TEST_NUM_MOTORS = 2;
-constexpr byte NUM_MOTORS = 5;
-constexpr byte NUM_WHEELS = 4;
-constexpr byte TEST_DRIBBLER_INDEX = 0; // dribbler index for testing
-constexpr byte DRIBBLER_INDEX = 4; // true dribbler index
-constexpr float DASH_POWER = 1;
-constexpr float DASH_ANGLE = 30; // in degrees
-
-// MCP2517 pins for CAN FD Arduino Shield
-constexpr byte MCP2517_SCK = 13;  // SCK
-constexpr byte MCP2517_SDI = 11;  // SDI (MOSI)
-constexpr byte MCP2517_SDO = 12;  // SDO (MISO)
-constexpr byte MCP2517_CS = 9;    // CS
-constexpr byte MCP2517_INT = 2;   // INT (A)
-
-constexpr long CANFD_BITRATE = 1000ll * 1000ll;  // 1 MBit bitrate for CANFD
+#include "MotorControl.h""
 
 ACAN2517FD can(MCP2517_CS, SPI, MCP2517_INT);
 
