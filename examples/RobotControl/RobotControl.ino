@@ -89,7 +89,7 @@ void setup() {
          return options;
       }());
       // Clear any faults
-      motors[i]->SetStop();
+      motors[i]->BeginStop();
    }
 
    // Don't touch anything above
