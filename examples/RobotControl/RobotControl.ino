@@ -63,6 +63,8 @@ void setup() {
   Serial.println(F("started"));
 
   SPI.begin();
+   
+  // Don't touch anything below
 
   // Run CAN-FD at 1 Mbit/s for both arbitration and data.
   ACAN2517FDSettings settings(
@@ -89,18 +91,15 @@ void setup() {
       // Clear any faults
       motors[i]->SetStop();
    }
+
+   // Don't touch anything above
+
 }
 
 void loop() {
-   static const auto start = millis();
-   auto now = millis();
-
-   if (now - start > 10000) { // if 10s have passed
-      stop(motors,KICKER_PIN);
-   } else {
-      dash(motors,angles,invert,DASH_POWER,DASH_ANGLE);
-   }
-
+   stop(motors, KICKER_PIN);
+   //turn(motors,TURN_SPEED);
+   //dash(motors,angles,invert,DASH_POWER,DASH_ANGLE);
 }
 
 /**
@@ -120,7 +119,7 @@ void dash(Moteus* wheels[NUM_WHEELS], float wheelAngles[NUM_WHEELS], bool invert
       if (invertRotation[i]) {
          cmd.velocity *= -1;
       }
-      motors[i]->SetPosition(cmd);
+      motors[i]->BeginPosition(cmd);
    }
 }
 
@@ -138,7 +137,7 @@ void turn(Moteus* wheels[NUM_WHEELS], float turnSpeed) {
       // convert from deg/s to wheel rev/s
       // deg/s / 360deg * robot circumference / robot circumference * 3 wheel revs per robot circumference = wheel rev/s
       cmd.velocity = -turnSpeed * arbitraryMultipler / 120; // convert rotational speed of robot to rotational speed of motors
-      motors[i]->SetPosition(cmd);
+      motors[i]->BeginPosition(cmd);
    }
 }
 
@@ -153,7 +152,7 @@ void dribblerCatch(Moteus* motors[NUM_MOTORS]) {
   Moteus::PositionMode::Command cmd;
   cmd.position = NaN;  // Pure velocity mode.
   cmd.velocity = invertDribblerRotation * dribblerSpeed;
-  motors[TEST_DRIBBLER_INDEX]->SetPosition(cmd);
+  motors[TEST_DRIBBLER_INDEX]->BeginPosition(cmd);
 }
 
 /**
@@ -161,7 +160,7 @@ void dribblerCatch(Moteus* motors[NUM_MOTORS]) {
  * @param motors array of motors
 */
 void stopDribbler(Moteus* motors[NUM_MOTORS]) {
-  motors[DRIBBLER_INDEX]->SetBrake();
+  motors[DRIBBLER_INDEX]->BeginBrake();
 }
 
 /**
@@ -170,7 +169,7 @@ void stopDribbler(Moteus* motors[NUM_MOTORS]) {
 */
 void stopLocomotion(Moteus* motors[NUM_WHEELS]) {
   for(int i=0;i<NUM_WHEELS;i++) {
-    motors[i]->SetBrake();
+    motors[i]->BeginBrake();
   }
 }
 
@@ -184,7 +183,7 @@ void shortKick(Moteus* motors[NUM_MOTORS], float shortKickPower) {
   Moteus::PositionMode::Command cmd;
   cmd.position = NaN;  // Pure velocity mode.
   cmd.velocity = invertDribblerRotation * shortKickPower;
-  motors[TEST_DRIBBLER_INDEX]->SetPosition(cmd);
+  motors[TEST_DRIBBLER_INDEX]->BeginPosition(cmd);
 }
 
 /**
@@ -213,6 +212,6 @@ void kick(const byte kickerPin) {
  */
 void stop(Moteus* motors[NUM_MOTORS], const byte kickerPin) {
    stopLocomotion(motors);
-   //stopDribbler(motors); // commented out for testing because treating a wheel motor as a dribbler motor bugs it out
+   stopDribbler(motors); // commented out for testing because treating a wheel motor as a dribbler motor bugs it out
    stopKicker(kickerPin);
 }
